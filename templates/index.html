@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>Code Bug Fixer</title>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Code Bug Fixer</h1>
+        <form action="/" class="clear-form">
+            <button class="clear-button" type="submit">Clear Code</button>
+        </form>
+    </div>
+
+    <form action="/" method="post">
+        <button class="submit-button" type="submit">Fix Code</button>
+        <div class="container">
+            <div class="left-column">
+                <textarea name="code" placeholder="Enter Code"></textarea>
+                <textarea name="error" placeholder="Enter Error" id=""></textarea>
+            </div>
+            <div class="right-column">
+                <textarea class="fixed-code" name="fixed-code" id="" placeholder="Fixed code"
+                    readonly>{{ fixed_code }}</textarea>
+                <textarea class="explaination" name="explaination" id="" placeholder="Explaination"
+                    readonly>{{ explaination }}</textarea>
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>
