@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, redirect, request, render_template
 import openai
 from openai import OpenAI
 import os
@@ -12,12 +12,14 @@ app = Flask(__name__)
 
 #loads api key from .env
 OPENROUTER_API_KEY= os.getenv("openrouter_api_key")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 
 #function to create a database
 def initialize_database():
     conn = sqlite3.connect('app.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (fingerprint text primary key, usage_counter int)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS users (fingerprint text primary key, usage_counter integer)''')
     # migrate: add usage_counter if missing
     c.execute("PRAGMA table_info(users)")
     cols = [row[1] for row in c.fetchall()]
@@ -129,6 +131,40 @@ def index():
         return render_template("index.html",explaination=explaination,fixed_code=fixed_code)
     
     return render_template("index.html")
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    amount = int(request.form["amount_key"])
+    plan = request.form["plan_key"]
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        mode="payment",
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": plan},
+                "unit_amount": amount,
+            },
+            "quantity": 1,
+        }],
+        success_url="http://localhost:5000/success?amount={}&plan={}".format(amount, plan),
+        cancel_url="http://localhost:5000/cancel",
+    )
+    return redirect(session.url, code=303)
+ #show congrates u have purchased successfull along with amount
+ 
+ 
+@app.route("/success")
+def success():
+    return "<h1> Payment successful!</h1>"
+
+@app.route("/cancel")
+def cancel():
+    return "<h1> Payment cancelled.</h1>"
+
+
+
 
 if __name__=="__main__":
     app.run(debug=True)
